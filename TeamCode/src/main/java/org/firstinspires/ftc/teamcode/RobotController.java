@@ -74,11 +74,21 @@ public class RobotController {
         frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        frontLeft.setTargetPosition(-1 * newFrontLeftTarget);
-        backLeft.setTargetPosition(-1 * newBackLeftTarget);
-        frontRight.setTargetPosition(-1 * newFrontRightTarget);
-        backRight.setTargetPosition(-1 * newBackRightTarget);
-
+	//NOTE: Left side has reversed polarity
+	if(angle > 0){
+		//Rotate Clockwise: Left side moves foward while right side moves backward
+		frontLeft.setTargetPosition(-1 * newFrontLeftTarget);
+        	backLeft.setTargetPosition(-1 * newBackLeftTarget);
+        	frontRight.setTargetPosition(-1 * newFrontRightTarget);
+        	backRight.setTargetPosition(-1 * newBackRightTarget);
+	}else{
+		//Rotate Counter-Clockwise: Right side moves foward while left side moves backward
+		frontLeft.setTargetPosition(newFrontLeftTarget);
+        	backLeft.setTargetPosition(newBackLeftTarget);
+        	frontRight.setTargetPosition(newFrontRightTarget);
+        	backRight.setTargetPosition(newBackRightTarget);
+	}
+       
         frontLeft.setPower(power);
         backLeft.setPower(power);
         frontRight.setPower(power);
@@ -165,6 +175,7 @@ public class RobotController {
 
         int i = 0;
         while(frontRight.isBusy() || backRight.isBusy() || frontLeft.isBusy() || frontRight.isBusy()){
+	    //Telemetry
             context.telemetry.addData("frontLeft", frontLeft.isBusy());
             context.telemetry.addData("frontRight", frontRight.isBusy());
             context.telemetry.addData("backLeft", backLeft.isBusy());

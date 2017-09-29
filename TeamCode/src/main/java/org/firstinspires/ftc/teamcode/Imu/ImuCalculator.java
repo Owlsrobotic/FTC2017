@@ -1,12 +1,12 @@
-package org.firstinspires.ftc.teamcode.Imu;
+package com.ethanthemaster.Imu;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+//import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 /**
  * Created by robotics on 9/11/2017.
  */
 
-public class ImuCalculator extends Thread{
+public class ImuCalculator implements Runnable{
 
     //Accelerometer Variables
     double totalAccelAreaX = 0.0;
@@ -24,23 +24,33 @@ public class ImuCalculator extends Thread{
     public double currentX = 0.0;
     public double currentY = 0.0;
 
-    long prevTimeAccel = 0;
+    long prevTimeAccel;
 
     //Gyro Variables
     double totalWAreaZ = 0.0;
     double prevWZ = 0.0;
-    long prevTimeGyro = 0;
+
     double currentRotationZ = 0.0;
 
-    LinearOpMode context;
+    long prevTimeGyro;
 
-    public ImuCalculator(LinearOpMode context){
+    //LinearOpMode context;
+
+    /*public ImuCalculator(LinearOpMode context){
         this.context = context;
-    }
+    }*/
 
     @Override
     public void run() {
-        // TODO: 9/11/2017 : WRITE SENSOR UPDATE CODE
+
+        prevTimeAccel = System.currentTimeMillis();
+        prevTimeGyro = System.currentTimeMillis();
+
+        while(true){
+            // TODO: 9/11/2017 : WRITE SENSOR UPDATE CODE
+            updateAccel(0, -10);
+        }
+
     }
 
     public double areaUnderGraph(double x0, double y0, double xF, double yF){
@@ -51,14 +61,14 @@ public class ImuCalculator extends Thread{
     public void updateAccel(double accelX, double accelY){
         long currentTime = System.currentTimeMillis();
 
-        double prevTimeSec = prevTimeAccel / 1000;
-        double currentTimeSec = currentTime / 1000;
+        double prevTimeSec = prevTimeAccel / 1000.0;
+        double currentTimeSec = currentTime / 1000.0;
 
-        totalAccelAreaX += areaUnderGraph(prevTimeSec, currentTimeSec, prevAccelX, accelX);
-        totalAccelAreaY += areaUnderGraph(prevTimeSec, currentTimeSec, prevAccelY, accelY);
+        totalAccelAreaX += areaUnderGraph(prevTimeSec, prevAccelX, currentTimeSec, accelX);
+        totalAccelAreaY += areaUnderGraph(prevTimeSec, prevAccelY, currentTimeSec, accelY);
 
-        totalVeloAreaX += areaUnderGraph(prevTimeSec, currentTimeSec, prevVeloX, totalAccelAreaX);
-        totalVeloAreaY += areaUnderGraph(prevTimeSec, currentTimeSec, prevVeloY, totalAccelAreaY);
+        totalVeloAreaX += areaUnderGraph(prevTimeSec, prevVeloX, currentTimeSec, totalAccelAreaX);
+        totalVeloAreaY += areaUnderGraph(prevTimeSec, prevVeloY, currentTimeSec, totalAccelAreaY);
 
         prevAccelX = accelX;
         prevAccelY = accelY;
@@ -73,10 +83,10 @@ public class ImuCalculator extends Thread{
     public void updateGyro(double wZ){
         long currentTime = System.currentTimeMillis();
 
-        double prevTimeSec = prevTimeGyro / 1000;
-        double currentTimeSec = prevTimeGyro / 1000;
+        double prevTimeSec = prevTimeGyro / 1000.0;
+        double currentTimeSec = prevTimeGyro / 1000.0;
 
-        totalWAreaZ += areaUnderGraph(prevTimeSec, currentTimeSec, prevWZ, wZ);
+        totalWAreaZ += areaUnderGraph(prevTimeSec, prevWZ, currentTimeSec, wZ);
 
         prevTimeGyro = currentTime;
         prevWZ = wZ;

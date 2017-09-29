@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Imu;
+package com.ethanthemaster.Imu;
 
 /**
  * Created by robotics on 9/11/2017.
