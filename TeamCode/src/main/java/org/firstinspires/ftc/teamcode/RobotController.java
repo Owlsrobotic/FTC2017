@@ -2,22 +2,19 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ReadWriteFile;
-
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
-import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.Imu.ImuCalculator;
 import org.firstinspires.ftc.teamcode.Imu.Orientation;
-
-import java.io.File;
+import com.qualcomm.robotcore.hardware.TouchSensor;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /**
  * RobotController controls all hardware on the robot
@@ -26,7 +23,7 @@ import java.io.File;
 
 public class RobotController {
 
-    //Wheel Configuration
+    // wheel configuration
     double     COUNTS_PER_MOTOR_REV    = 1120 ;
     double     DRIVE_GEAR_REDUCTION    = 1.0 ;
     double     WHEEL_DIAMETER_METERS   = 0.1016 ;
@@ -34,8 +31,8 @@ public class RobotController {
 
     double ROTATION_RADIUS = .464 / 2;
 
-    //Enumeration Declarations
-    public static int DIRECTION_FOWARD = 0;
+    // enumeration declarations
+    public static int DIRECTION_FORWARD = 0;
     public static int DIRECTION_REVERSE = 1;
     public static int DIRECTION_LEFT = 2;
     public static int DIRECTION_RIGHT = 3;
@@ -59,8 +56,13 @@ public class RobotController {
     VuforiaTrackable relicTemplate;
 
     BNO055IMU imu;
-    Thread imuThread;
+//    Thread imuThread;
     ImuCalculator imuCalc;
+
+    // autonomous tests
+    ColorSensor testColorSensor;
+    DistanceSensor testDistanceSensor;
+    TouchSensor testTouchSensor;
 
     public RobotController(LinearOpMode context){
         this.context = context;
@@ -99,22 +101,26 @@ public class RobotController {
 
 //        imu.startAccelerationIntegration(new Position(), new Velocity(), 2000);
 
-        imuCalc = new ImuCalculator(imu, context);
-        imuThread = new Thread(imuCalc);
-        imuThread.start();
+//        imuCalc = new ImuCalculator(imu, context);
+//        imuThread = new Thread(imuCalc);
+//        imuThread.start();
+
+        testColorSensor = hmap.colorSensor.get("test_color");
+        testDistanceSensor = hmap.get(DistanceSensor.class, "test_distance");
+        testTouchSensor = hmap.get(TouchSensor.class, "test_touch");
     }
 
-    //angle is in radian
+    // angle is in radians
     public void rotate(double angle, double power){
         double distance = ROTATION_RADIUS * angle;
 
-        //Reset all motors
+        // reset all motors
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        //Tell to run encoder
+        // tell to run encoder
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -187,7 +193,7 @@ public class RobotController {
 
         int test = -1;
 
-        if(direction == DIRECTION_FOWARD){
+        if(direction == DIRECTION_FORWARD){
             test = direction;
 
             frontLeft.setTargetPosition(-1 * newFrontLeftTarget);
@@ -260,7 +266,7 @@ public class RobotController {
     public void move(double power, int direction){
         //Front Left and Back Left have reversed polarity ... use negative for forward
 
-        if(direction == DIRECTION_FOWARD){
+        if(direction == DIRECTION_FORWARD){
             frontRight.setPower(power);
             frontLeft.setPower(-1 * power);
             backRight.setPower(power);
@@ -313,5 +319,99 @@ public class RobotController {
         return imuCalc.getOrientation();
 //        Position pos = imu.getPosition();
 //        return new Orientation(pos.x, pos.y, 0);
+    }
+
+    public int getRawColor(ColorSensor sensor, String color) {
+        if (color == "red") {
+            return sensor.red();
+        }
+        if (color == "green") {
+            return sensor.green();
+        }
+        if (color == "blue") {
+            return sensor.blue();
+        } else {
+            return 0;
+        }
+    }
+
+    public String getColor(ColorSensor sensor, int numberOfScans) {
+
+        int completedScans = 0;
+
+        int totalRed = 0;
+        int totalGreen = 0;
+        int totalBlue = 0;
+
+        while (completedScans < numberOfScans) {
+
+            String rawColor = rawColorScan(sensor);
+
+            while (rawColor == "error") {
+                rawColor = rawColorScan(sensor);
+            }
+
+            if (rawColor == "red") {
+                totalRed++;
+            } else if (rawColor == "green") {
+                totalGreen++;
+            } else if (rawColor == "blue") {
+                totalBlue++;
+            }
+
+            completedScans++;
+        }
+
+        String totalColor = totalColorScan(sensor, totalRed, totalGreen, totalBlue);
+
+        while (totalColor == "error") {
+            totalColor = totalColorScan(sensor, totalRed, totalGreen, totalBlue);
+        }
+
+        if (totalColor == "red") {
+            return "red";
+        } else if (totalColor == "green") {
+            return "green";
+        } else if (totalColor == "blue") {
+            return "blue";
+        }
+
+        return "error";
+    }
+
+    private String rawColorScan(ColorSensor sensor) {
+
+        int amountRed = getRawColor(sensor, "red");
+        int amountGreen = getRawColor(sensor, "green");
+        int amountBlue = getRawColor(sensor, "blue");
+
+        if (amountRed > amountGreen && amountRed > amountBlue) {
+            return "red";
+        } else if (amountGreen > amountRed && amountGreen > amountBlue) {
+            return "green";
+        } else if (amountBlue > amountRed && amountBlue > amountGreen) {
+            return "blue";
+        }
+
+        return "error";
+    }
+
+    private String totalColorScan(ColorSensor sensor, int totalRed, int totalGreen, int totalBlue) {
+
+        if (totalRed > totalBlue && totalRed > totalGreen) {
+            return "red";
+        } else if (totalGreen > totalRed && totalGreen > totalBlue) {
+            return "green";
+        } else if (totalBlue > totalRed && totalBlue > totalGreen) {
+            return "blue";
+        }
+
+        return "error";
+    }
+
+    public double getDistance(DistanceSensor sensor, DistanceUnit unit) {
+        double distance = sensor.getDistance(unit);
+
+        return distance;
     }
 }
