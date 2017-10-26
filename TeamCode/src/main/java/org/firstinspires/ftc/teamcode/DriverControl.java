@@ -80,6 +80,8 @@ public class DriverControl extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            controller.detectVumark();
+
             if(gamepad1.y){
                 controller.moveDistance(1.7, .5, RobotController.DIRECTION_FOWARD);
             }else if(gamepad1.x){
@@ -88,6 +90,10 @@ public class DriverControl extends LinearOpMode {
                 controller.moveDistance(1.7, .5, RobotController.DIRECTION_RIGHT);
             }else if(gamepad1.a){
                 controller.moveDistance(1.7, .5, RobotController.DIRECTION_REVERSE);
+            }
+
+            if(gamepad1.dpad_right){
+                controller.rotate(Math.toRadians(45), .7);
             }
             /*}else if(gamepad1.right_bumper){
                 controller.rotate(.7, RobotController.ROTATE_RIGHT);
@@ -122,6 +128,7 @@ public class DriverControl extends LinearOpMode {
             controller.move(0, RobotController.DIRECTION_FOWARD);
 
             telemetry.addData("handome lakewe: ", gamepad1.right_stick_x);
+            telemetry.addData("Imu Calc", controller.getRobotOrientation().toString());
             telemetry.update();
         }
     }

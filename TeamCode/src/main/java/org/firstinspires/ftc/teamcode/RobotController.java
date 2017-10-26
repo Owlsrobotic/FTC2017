@@ -1,8 +1,23 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ReadWriteFile;
+
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.Imu.ImuCalculator;
+import org.firstinspires.ftc.teamcode.Imu.Orientation;
+
+import java.io.File;
 
 /**
  * RobotController controls all hardware on the robot
@@ -17,7 +32,7 @@ public class RobotController {
     double     WHEEL_DIAMETER_METERS   = 0.1016 ;
     double     COUNTS_PER_METER        = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_METERS * 3.1415);
 
-    double ROTATION_RADIUS = 1.0;
+    double ROTATION_RADIUS = .464 / 2;
 
     //Enumeration Declarations
     public static int DIRECTION_FOWARD = 0;
@@ -36,15 +51,57 @@ public class RobotController {
     DcMotor backRight;
     DcMotor backLeft;
 
+    //Vuforia fields
+    int cameraMonitorViewId;
+    VuforiaLocalizer.Parameters parameters;
+    VuforiaLocalizer vuforia;
+    VuforiaTrackables relicTrackables;
+    VuforiaTrackable relicTemplate;
+
+    BNO055IMU imu;
+    Thread imuThread;
+    ImuCalculator imuCalc;
+
     public RobotController(LinearOpMode context){
         this.context = context;
 
         hmap = context.hardwareMap;
 
+        //Setting up motors
         frontRight = hmap.dcMotor.get("front_right");
         frontLeft = hmap.dcMotor.get("front_left");
         backRight = hmap.dcMotor.get("back_right");
         backLeft = hmap.dcMotor.get("back_left");
+
+        //Setting up Vuforia
+        cameraMonitorViewId = hmap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hmap.appContext.getPackageName());
+        parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+
+        parameters.vuforiaLicenseKey = "AQfcvgf/////AAAAGdN+qKpBsEVHoQv9Tbl9rEwid5sqZQ/PU7AaS3noa/ht7K7vgAgjR7jdMqq3uv5CZR5l98sacbhIfOjgnl6IAVNMfmbge4tSJcjida+/BmwDbq0QfsTYfsPzQE+86L0xgY7gRnnU++Voak+/mNpFrGAMR66VHgWP1nxM4PqdoqTwAnezheyd35NczIRFBTReI3p3HbbIJiXBmriFO8YMBC0B5/ZD1Euh8yXhj0cTFDR0T4Evjp1bNHOQkiZkFYzg12gpLgiWDJavXhOnb7dUHhKlLzVEZQ/aRaW0YzYJPZQzRE0CF0vo9tZ4EUaCvG1ieBFtu88ZXHJGGsYG5TxJb6iGLzR3iOfNIKhfMZ2az6PC";
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+
+        relicTrackables = vuforia.loadTrackablesFromAsset("RelicVuMark");
+        relicTemplate = relicTrackables.get(0);
+        relicTemplate.setName("relicVuMarkTemplate");
+
+        relicTrackables.activate();
+
+        //Setting up IMU
+        BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
+        imuParameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        imuParameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        imuParameters.loggingEnabled = true;
+
+
+        imu = hmap.get(BNO055IMU.class, "imu");
+        imu.initialize(imuParameters);
+
+//        imu.startAccelerationIntegration(new Position(), new Velocity(), 2000);
+
+        imuCalc = new ImuCalculator(imu, context);
+        imuThread = new Thread(imuCalc);
+        imuThread.start();
     }
 
     //angle is in radian
@@ -242,5 +299,19 @@ public class RobotController {
             backRight.setPower(-1 * power);
             backLeft.setPower(-1 * power);
         }
+    }
+
+    public RelicRecoveryVuMark detectVumark(){
+        RelicRecoveryVuMark result = RelicRecoveryVuMark.from(relicTemplate);
+        context.telemetry.addData("Vumark", result.toString());
+//        context.telemetry.addData("Vumark license", hmap.appContext.getString(R.string.vuforia_license));
+        context.telemetry.update();
+        return result;
+    }
+
+    public Orientation getRobotOrientation() {
+        return imuCalc.getOrientation();
+//        Position pos = imu.getPosition();
+//        return new Orientation(pos.x, pos.y, 0);
     }
 }

@@ -1,4 +1,4 @@
-package com.ethanthemaster.Imu;
+package org.firstinspires.ftc.teamcode.Imu;
 
 /**
  * Created by robotics on 9/11/2017.
@@ -26,5 +26,14 @@ public class Orientation {
 
     public double getRotationZ() {
         return rotationZ;
+    }
+
+    @Override
+    public String toString() {
+        return "Orientation{" +
+                "posX=" + posX +
+                ", posY=" + posY +
+                ", rotationZ=" + rotationZ +
+                '}';
     }
 }
