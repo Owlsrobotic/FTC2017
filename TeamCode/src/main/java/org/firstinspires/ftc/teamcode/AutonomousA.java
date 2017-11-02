@@ -29,14 +29,9 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Color;
-
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -80,17 +75,17 @@ public class AutonomousA extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        // make sure this shit can read
+        controller.testColorSensor.enableLed(true);
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            controller = new RobotController(this);
 
-            // make sure this shit can read
-            controller.testColorSensor.enableLed(true);
 
             while(runtime.time(TimeUnit.SECONDS) < 5) {
                 telemetry.addData("blue", telemetry.addData("blue", controller.testColorSensor.blue()));
                 telemetry.addData("green", controller.testColorSensor.green());
                 telemetry.addData("red", controller.testColorSensor.red());
+                telemetry.update();
             }
 
             controller.move(0.15, DIRECTION_FORWARD);
@@ -118,9 +113,9 @@ public class AutonomousA extends LinearOpMode {
             controller.move(0.4, DIRECTION_FORWARD);
 
             for(int i=0; i<1; i++) {
-                while (controller.testTouchSensor.getValue() < 0.5) {
-                    telemetry.addData("touch", controller.testTouchSensor.getValue());
+                while (controller.digitalTouch.getState() == true) { // inverse because whoever designed this is stupid
                     telemetry.addData("Distance: ", controller.getDistance(controller.testDistanceSensor, DistanceUnit.CM));
+                    telemetry.addData("State: ", controller.digitalTouch.getState());
                     telemetry.update();
                 }
             }

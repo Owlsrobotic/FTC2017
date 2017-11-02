@@ -4,17 +4,18 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.teamcode.Imu.ImuCalculator;
 import org.firstinspires.ftc.teamcode.Imu.Orientation;
-import com.qualcomm.robotcore.hardware.TouchSensor;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /**
  * RobotController controls all hardware on the robot
@@ -60,9 +61,9 @@ public class RobotController {
     ImuCalculator imuCalc;
 
     // autonomous tests
+    DigitalChannel digitalTouch;
     ColorSensor testColorSensor;
     DistanceSensor testDistanceSensor;
-    TouchSensor testTouchSensor;
 
     public RobotController(LinearOpMode context){
         this.context = context;
@@ -96,8 +97,8 @@ public class RobotController {
         imuParameters.loggingEnabled = true;
 
 
-        imu = hmap.get(BNO055IMU.class, "imu");
-        imu.initialize(imuParameters);
+//        imu = hmap.get(BNO055IMU.class, "imu");
+//        imu.initialize(imuParameters);
 
 //        imu.startAccelerationIntegration(new Position(), new Velocity(), 2000);
 
@@ -105,9 +106,12 @@ public class RobotController {
 //        imuThread = new Thread(imuCalc);
 //        imuThread.start();
 
+        // autonomous stuff
+        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
         testColorSensor = hmap.colorSensor.get("test_color");
         testDistanceSensor = hmap.get(DistanceSensor.class, "test_distance");
-        testTouchSensor = hmap.get(TouchSensor.class, "test_touch");
+
+        digitalTouch.setMode(DigitalChannel.Mode.INPUT);
     }
 
     // angle is in radians

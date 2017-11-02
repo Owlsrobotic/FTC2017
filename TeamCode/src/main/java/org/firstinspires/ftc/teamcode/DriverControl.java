@@ -29,14 +29,10 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 
 /**
@@ -80,7 +76,6 @@ public class DriverControl extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            controller.detectVumark();
 
             if(gamepad1.y){
                 controller.moveDistance(1.7, .5, RobotController.DIRECTION_FORWARD);
@@ -131,6 +126,7 @@ public class DriverControl extends LinearOpMode {
 //            telemetry.addData("Imu Calc", controller.getRobotOrientation().toString());
             controller.move(0, RobotController.DIRECTION_FORWARD);
             telemetry.update();
+            controller.detectVumark();
         }
     }
 }
