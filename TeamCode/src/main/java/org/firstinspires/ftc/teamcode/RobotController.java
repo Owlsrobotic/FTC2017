@@ -13,6 +13,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.teamcode.Imu.ImuCalculator;
 import org.firstinspires.ftc.teamcode.Imu.Orientation;
+
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -64,6 +66,8 @@ public class RobotController {
     DistanceSensor testDistanceSensor;
     TouchSensor testTouchSensor;
 
+    public Servo jewelsArm;
+
     public RobotController(LinearOpMode context){
         this.context = context;
 
@@ -96,8 +100,8 @@ public class RobotController {
         imuParameters.loggingEnabled = true;
 
 
-        imu = hmap.get(BNO055IMU.class, "imu");
-        imu.initialize(imuParameters);
+//        imu = hmap.get(BNO055IMU.class, "imu");
+//        imu.initialize(imuParameters);
 
 //        imu.startAccelerationIntegration(new Position(), new Velocity(), 2000);
 
@@ -107,7 +111,8 @@ public class RobotController {
 
         testColorSensor = hmap.colorSensor.get("test_color");
         testDistanceSensor = hmap.get(DistanceSensor.class, "test_distance");
-        testTouchSensor = hmap.get(TouchSensor.class, "test_touch");
+
+        jewelsArm = hmap.servo.get("jewels_arm");
     }
 
     // angle is in radians
@@ -413,5 +418,12 @@ public class RobotController {
         double distance = sensor.getDistance(unit);
 
         return distance;
+    }
+
+    // position is on range from 0 to 1.0 where 1.0 will move to maximum position
+    // position can be negative to reverse direction
+    public void moveServo(Servo servo, double position) {
+        servo.setDirection(Servo.Direction.FORWARD);
+        servo.setPosition(position);
     }
 }

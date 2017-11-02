@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -77,6 +78,8 @@ public class DriverControl extends LinearOpMode {
         DcMotor fr = hardwareMap.dcMotor.get("front_right");
         DcMotor bl = hardwareMap.dcMotor.get("back_left");
         DcMotor br = hardwareMap.dcMotor.get("back_right");
+
+        controller.moveServo(controller.jewelsArm, 0);
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -123,6 +126,12 @@ public class DriverControl extends LinearOpMode {
                 } else if (gamepad1.left_stick_y < 0) {
                     controller.move(gamepad1.left_stick_y, RobotController.DIRECTION_REVERSE);
                 }
+            }
+
+            if (gamepad1.dpad_up) {
+                controller.moveServo(controller.jewelsArm, .60);
+            } else {
+                controller.moveServo(controller.jewelsArm, -.1);
             }
 
             controller.move(0, RobotController.DIRECTION_FORWARD);
