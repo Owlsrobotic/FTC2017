@@ -74,6 +74,8 @@ public class DriverControl extends LinearOpMode {
         DcMotor bl = hardwareMap.dcMotor.get("back_left");
         DcMotor br = hardwareMap.dcMotor.get("back_right");
 
+        controller.moveServo(controller.jewelsArm, 0);
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
@@ -118,6 +120,12 @@ public class DriverControl extends LinearOpMode {
                 } else if (gamepad1.left_stick_y < 0) {
                     controller.move(gamepad1.left_stick_y, RobotController.DIRECTION_REVERSE);
                 }
+            }
+
+            if (gamepad1.dpad_up) {
+                controller.moveServo(controller.jewelsArm, .60);
+            } else {
+                controller.moveServo(controller.jewelsArm, -.1);
             }
 
             controller.move(0, RobotController.DIRECTION_FORWARD);

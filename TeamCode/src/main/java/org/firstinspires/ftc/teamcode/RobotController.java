@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -65,6 +66,8 @@ public class RobotController {
     ColorSensor testColorSensor;
     DistanceSensor testDistanceSensor;
 
+    public Servo jewelsArm;
+
     public RobotController(LinearOpMode context){
         this.context = context;
 
@@ -112,6 +115,7 @@ public class RobotController {
         testDistanceSensor = hmap.get(DistanceSensor.class, "test_distance");
 
         digitalTouch.setMode(DigitalChannel.Mode.INPUT);
+        jewelsArm = hmap.servo.get("jewels_arm");
     }
 
     // angle is in radians
@@ -417,5 +421,12 @@ public class RobotController {
         double distance = sensor.getDistance(unit);
 
         return distance;
+    }
+
+    // position is on range from 0 to 1.0 where 1.0 will move to maximum position
+    // position can be negative to reverse direction
+    public void moveServo(Servo servo, double position) {
+        servo.setDirection(Servo.Direction.FORWARD);
+        servo.setPosition(position);
     }
 }
