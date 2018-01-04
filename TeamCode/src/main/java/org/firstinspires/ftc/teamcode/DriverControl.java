@@ -78,7 +78,6 @@ public class DriverControl extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-
             if(gamepad1.y){
                 controller.moveDistance(1.7, .5, RobotController.DIRECTION_FORWARD);
             }else if(gamepad1.x){

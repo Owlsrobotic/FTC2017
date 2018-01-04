@@ -54,10 +54,10 @@ public class RobotController {
     DcMotor backLeft;
 
     // Todo: Implement motor bindings
-    DcMotor rampMotor;
-    DcMotor conveyorMotorLeft;
-    DcMotor conveyorMotorRight;
-    DcMotor armMotor;
+    DcMotor trapdoorMotor;
+    DcMotor elevatorMotor;
+    DcMotor leftBeltMotor;
+    DcMotor rightBeltMotor;
 
     // Todo: Implement servo bindings
     Servo leftClaw;
@@ -89,17 +89,22 @@ public class RobotController {
 
         hmap = context.hardwareMap;
 
-/*        //Setting up motors
+        //Setting up motors
         frontRight = hmap.dcMotor.get("front_right");
         frontLeft = hmap.dcMotor.get("front_left");
         backRight = hmap.dcMotor.get("back_right");
-        backLeft = hmap.dcMotor.get("back_left");*/
+        backLeft = hmap.dcMotor.get("back_left");
 
         //Setting up servos
         leftClaw = hmap.servo.get("left_claw");
         rightClaw = hmap.servo.get("right_claw");
         elbowServo = hmap.servo.get("elbow");
         wristServo = hmap.servo.get("wrist");
+
+        trapdoorMotor = hmap.dcMotor.get("trapdoor");
+        elevatorMotor = hmap.dcMotor.get("elevator");
+        leftBeltMotor = hmap.dcMotor.get("left_belt");
+        rightBeltMotor = hmap.dcMotor.get("right_belt");
 
         //Setting up Vuforia
         cameraMonitorViewId = hmap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hmap.appContext.getPackageName());
@@ -132,12 +137,12 @@ public class RobotController {
 //        imuThread.start();
 
         // autonomous stuff
-/*        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
+        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
         testDistanceSensor = hmap.get(DistanceSensor.class, "test_distance");
 
         digitalTouch.setMode(DigitalChannel.Mode.INPUT);
         jewelsArm = hmap.servo.get("jewels_arm");
-        jewelsColorSensor = hmap.colorSensor.get("test_color");*/
+        jewelsColorSensor = hmap.colorSensor.get("test_color");
     }
 
     // angle is in radians
@@ -293,28 +298,28 @@ public class RobotController {
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void move(double power, int direction){
+    public void move(double power, int direction) {
         //Front Left and Back Left have reversed polarity ... use negative for forward
 
-        if(direction == DIRECTION_FORWARD){
+        if (direction == DIRECTION_FORWARD) {
             frontRight.setPower(power);
             frontLeft.setPower(-1 * power);
             backRight.setPower(power);
             backLeft.setPower(-1 * power);
         }
-        if(direction == DIRECTION_REVERSE){
+        if (direction == DIRECTION_REVERSE) {
             frontRight.setPower(-1 * power);
             frontLeft.setPower(power);
             backRight.setPower(-1 * power);
             backLeft.setPower(power);
         }
-        if(direction == DIRECTION_RIGHT){
+        if (direction == DIRECTION_RIGHT) {
             frontRight.setPower(-1 * power);
             frontLeft.setPower(-1 * power);
             backRight.setPower(power);
             backLeft.setPower(power);
         }
-        if(direction == DIRECTION_LEFT){
+        if (direction == DIRECTION_LEFT) {
             frontRight.setPower(power);
             frontLeft.setPower(power);
             backRight.setPower(-1 * power);
