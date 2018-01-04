@@ -33,14 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
-import java.util.concurrent.TimeUnit;
-
-import static org.firstinspires.ftc.teamcode.RobotController.DIRECTION_FORWARD;
-import static org.firstinspires.ftc.teamcode.RobotController.DIRECTION_LEFT;
-import static org.firstinspires.ftc.teamcode.RobotController.DIRECTION_REVERSE;
-import static org.firstinspires.ftc.teamcode.RobotController.DIRECTION_RIGHT;
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 
 /**
@@ -59,7 +52,6 @@ import static org.firstinspires.ftc.teamcode.RobotController.DIRECTION_RIGHT;
 @Autonomous(name="wizard", group="Linear Opmode")
 public class AutonomousA extends LinearOpMode {
 
-    // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     RobotController controller;
 
@@ -68,7 +60,6 @@ public class AutonomousA extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        // meaningful comment
         controller = new RobotController(this);
 
         // wait for the game to start (driver presses PLAY)
@@ -76,12 +67,51 @@ public class AutonomousA extends LinearOpMode {
         runtime.reset();
 
         // make sure this shit can read
-        controller.testColorSensor.enableLed(true);
+        controller.jewelsColorSensor.enableLed(true);
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
+            // jewel recognition
+            controller.moveServo(controller.jewelsArm, 0.56);
+            //Wait for servo to get into position then get color reading
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-            while(runtime.time(TimeUnit.SECONDS) < 5) {
+            String color = controller.getColor(controller.jewelsColorSensor, 10);
+
+
+            if(color=="blue") {
+                controller.moveDistance(0.1, 0.1, controller.DIRECTION_REVERSE);
+                controller.moveServo(controller.jewelsArm, 0);
+                controller.moveDistance(-0.1, 0.1, controller.DIRECTION_REVERSE);
+            } else {
+                controller.moveDistance(-0.1, 0.1, controller.DIRECTION_REVERSE);
+                controller.moveServo(controller.jewelsArm, 0);
+                controller.moveDistance(0.1, 0.1, controller.DIRECTION_REVERSE);
+            }
+
+            // image recognition
+            controller.moveDistance(.4, .1, controller.DIRECTION_FORWARD);
+            RelicRecoveryVuMark mark = controller.detectVumark();
+            telemetry.addData("VUMARK: ", mark.toString());
+            telemetry.update();
+            switch (mark) {
+                case LEFT:
+                    controller.moveDistance(.5, .1, controller.DIRECTION_LEFT);
+                    break;
+                case CENTER:
+                    controller.rotate(Math.toRadians(45), .5);
+                    break;
+                case RIGHT:
+                    controller.rotate(Math.toRadians(-45), .5);
+                    break;
+            }
+            break;
+            /*while(runtime.time(TimeUnit.SECONDS) < 5) {
                 telemetry.addData("blue", telemetry.addData("blue", controller.testColorSensor.blue()));
                 telemetry.addData("green", controller.testColorSensor.green());
                 telemetry.addData("red", controller.testColorSensor.red());
@@ -89,6 +119,7 @@ public class AutonomousA extends LinearOpMode {
             }
 
             controller.move(0.15, DIRECTION_FORWARD);
+
 
             for(int i=0; i<1; i++) {
                 while (controller.getDistance(controller.testDistanceSensor, DistanceUnit.CM) > 10 || Double.isNaN(controller.getDistance(controller.testDistanceSensor, DistanceUnit.CM))) {
@@ -120,7 +151,7 @@ public class AutonomousA extends LinearOpMode {
                 }
             }
 
-            controller.move(0, DIRECTION_FORWARD);
+            controller.move(0, DIRECTION_FORWARD);*/
         }
     }
 }

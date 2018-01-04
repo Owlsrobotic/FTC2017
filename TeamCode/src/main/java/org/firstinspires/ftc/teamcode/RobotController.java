@@ -42,6 +42,9 @@ public class RobotController {
     public static int ROTATE_LEFT = 4;
     public static int ROTATE_RIGHT = 5;
 
+    public static int CLAW_CLOSED = 0;
+    public static int CLAW_OPEN = 1;
+
     private LinearOpMode context;
     private HardwareMap hmap;
 
@@ -49,6 +52,18 @@ public class RobotController {
     DcMotor frontLeft;
     DcMotor backRight;
     DcMotor backLeft;
+
+    // Todo: Implement motor bindings
+    DcMotor rampMotor;
+    DcMotor conveyorMotorLeft;
+    DcMotor conveyorMotorRight;
+    DcMotor armMotor;
+
+    // Todo: Implement servo bindings
+    Servo leftClaw;
+    Servo rightClaw;
+    Servo wristServo;
+    Servo elbowServo;
 
     //Vuforia fields
     int cameraMonitorViewId;
@@ -63,21 +78,28 @@ public class RobotController {
 
     // autonomous tests
     DigitalChannel digitalTouch;
-    ColorSensor testColorSensor;
     DistanceSensor testDistanceSensor;
 
+    // Jewels Control
     public Servo jewelsArm;
+    public ColorSensor jewelsColorSensor;
 
     public RobotController(LinearOpMode context){
         this.context = context;
 
         hmap = context.hardwareMap;
 
-        //Setting up motors
+/*        //Setting up motors
         frontRight = hmap.dcMotor.get("front_right");
         frontLeft = hmap.dcMotor.get("front_left");
         backRight = hmap.dcMotor.get("back_right");
-        backLeft = hmap.dcMotor.get("back_left");
+        backLeft = hmap.dcMotor.get("back_left");*/
+
+        //Setting up servos
+        leftClaw = hmap.servo.get("left_claw");
+        rightClaw = hmap.servo.get("right_claw");
+        elbowServo = hmap.servo.get("elbow");
+        wristServo = hmap.servo.get("wrist");
 
         //Setting up Vuforia
         cameraMonitorViewId = hmap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hmap.appContext.getPackageName());
@@ -110,12 +132,12 @@ public class RobotController {
 //        imuThread.start();
 
         // autonomous stuff
-        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
-        testColorSensor = hmap.colorSensor.get("test_color");
+/*        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
         testDistanceSensor = hmap.get(DistanceSensor.class, "test_distance");
 
         digitalTouch.setMode(DigitalChannel.Mode.INPUT);
         jewelsArm = hmap.servo.get("jewels_arm");
+        jewelsColorSensor = hmap.colorSensor.get("test_color");*/
     }
 
     // angle is in radians
@@ -332,11 +354,7 @@ public class RobotController {
     public int getRawColor(ColorSensor sensor, String color) {
         if (color == "red") {
             return sensor.red();
-        }
-        if (color == "green") {
-            return sensor.green();
-        }
-        if (color == "blue") {
+        } else if (color == "blue") {
             return sensor.blue();
         } else {
             return 0;
@@ -346,9 +364,7 @@ public class RobotController {
     public String getColor(ColorSensor sensor, int numberOfScans) {
 
         int completedScans = 0;
-
         int totalRed = 0;
-        int totalGreen = 0;
         int totalBlue = 0;
 
         while (completedScans < numberOfScans) {
@@ -361,8 +377,6 @@ public class RobotController {
 
             if (rawColor == "red") {
                 totalRed++;
-            } else if (rawColor == "green") {
-                totalGreen++;
             } else if (rawColor == "blue") {
                 totalBlue++;
             }
@@ -370,50 +384,44 @@ public class RobotController {
             completedScans++;
         }
 
-        String totalColor = totalColorScan(sensor, totalRed, totalGreen, totalBlue);
+        String totalColor = totalColorScan(sensor, totalRed, totalBlue);
 
         while (totalColor == "error") {
-            totalColor = totalColorScan(sensor, totalRed, totalGreen, totalBlue);
+            totalColor = totalColorScan(sensor, totalRed, totalBlue);
         }
 
         if (totalColor == "red") {
             return "red";
-        } else if (totalColor == "green") {
-            return "green";
         } else if (totalColor == "blue") {
             return "blue";
         }
 
+        // one in a million chance, but it's not hard to fix
         return "error";
     }
 
     private String rawColorScan(ColorSensor sensor) {
 
         int amountRed = getRawColor(sensor, "red");
-        int amountGreen = getRawColor(sensor, "green");
         int amountBlue = getRawColor(sensor, "blue");
 
-        if (amountRed > amountGreen && amountRed > amountBlue) {
+        if (amountRed > amountBlue) {
             return "red";
-        } else if (amountGreen > amountRed && amountGreen > amountBlue) {
-            return "green";
-        } else if (amountBlue > amountRed && amountBlue > amountGreen) {
+        } else if (amountBlue > amountRed){
             return "blue";
         }
 
+        // one in a million chance, but it's not hard to fix
         return "error";
     }
 
-    private String totalColorScan(ColorSensor sensor, int totalRed, int totalGreen, int totalBlue) {
-
-        if (totalRed > totalBlue && totalRed > totalGreen) {
+    private String totalColorScan(ColorSensor sensor, int totalRed, int totalBlue) {
+        if (totalRed > totalBlue) {
             return "red";
-        } else if (totalGreen > totalRed && totalGreen > totalBlue) {
-            return "green";
-        } else if (totalBlue > totalRed && totalBlue > totalGreen) {
+        } else if (totalBlue > totalRed)
             return "blue";
-        }
 
+        // one in a million chance, but it's not hard to fix
         return "error";
     }
 
@@ -428,5 +436,15 @@ public class RobotController {
     public void moveServo(Servo servo, double position) {
         servo.setDirection(Servo.Direction.FORWARD);
         servo.setPosition(position);
+    }
+
+    public void manipulateClaws(int position) {
+        if(position == CLAW_CLOSED) {
+            moveServo(leftClaw, 1.0);
+            moveServo(rightClaw, 0.0);
+        } else if (position == CLAW_OPEN) {
+            moveServo(leftClaw, .4);
+            moveServo(rightClaw, .7);
+        }
     }
 }
