@@ -45,6 +45,10 @@ public class RobotController {
     public static int CLAW_CLOSED = 0;
     public static int CLAW_OPEN = 1;
 
+    // no green as unneeded
+    public static int COLOR_RED = 0;
+    public static int COLOR_BLUE = 1;
+
     private LinearOpMode context;
     private HardwareMap hmap;
 
@@ -76,9 +80,9 @@ public class RobotController {
 //    Thread imuThread;
     ImuCalculator imuCalc;
 
-    // autonomous tests
+    // autonomous
     DigitalChannel digitalTouch;
-    DistanceSensor testDistanceSensor;
+    DistanceSensor distanceSensor;
 
     // Jewels Control
     public Servo jewelsArm;
@@ -95,6 +99,11 @@ public class RobotController {
         backRight = hmap.dcMotor.get("back_right");
         backLeft = hmap.dcMotor.get("back_left");
 
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         //Setting up servos
         leftClaw = hmap.servo.get("left_claw");
         rightClaw = hmap.servo.get("right_claw");
@@ -105,6 +114,10 @@ public class RobotController {
         elevatorMotor = hmap.dcMotor.get("elevator");
         leftBeltMotor = hmap.dcMotor.get("left_belt");
         rightBeltMotor = hmap.dcMotor.get("right_belt");
+
+        // autonomous stuff
+        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
+        distanceSensor = hmap.get(DistanceSensor.class, "test_distance");
 
         //Setting up Vuforia
         cameraMonitorViewId = hmap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hmap.appContext.getPackageName());
@@ -136,11 +149,9 @@ public class RobotController {
 //        imuThread = new Thread(imuCalc);
 //        imuThread.start();
 
-        // autonomous stuff
-        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
-        testDistanceSensor = hmap.get(DistanceSensor.class, "test_distance");
 
-        digitalTouch.setMode(DigitalChannel.Mode.INPUT);
+
+//        digitalTouch.setMode(DigitalChannel.Mode.INPUT);
         jewelsArm = hmap.servo.get("jewels_arm");
         jewelsColorSensor = hmap.colorSensor.get("test_color");
     }
@@ -327,6 +338,27 @@ public class RobotController {
         }
     }
 
+    public void moveDirection(double power, double directionX, double directionY) {
+        double magnitude = Math.sqrt(Math.pow(directionX, 2) + Math.pow(directionY, 2));
+        double normalizedX = directionX / magnitude;
+        double normalizedY = directionY / magnitude;
+
+        double frontRightFow = power * magnitude;
+        double frontLeftFow = -1.0 * power * magnitude;
+        double backRightFow = power * magnitude;
+        double backLeftFow = -1.0 * power * magnitude;
+
+        double frontRightRight = -1.0 * power * magnitude;
+        double frontLeftRight = -1.0 * power * magnitude;
+        double backRightRight = power * magnitude;
+        double backLeftRight = power * magnitude;
+
+        frontRight.setPower(normalizedY * frontRightFow + normalizedX * frontRightRight);
+        frontLeft.setPower(normalizedY * frontLeftFow + normalizedX * frontLeftRight);
+        backRight.setPower(normalizedY * backRightFow + normalizedX * backRightRight);
+        backLeft.setPower(normalizedY * backLeftFow + normalizedX * backLeftRight);
+    }
+
     public void rotate(double power, int direction){
         if(direction == RobotController.ROTATE_LEFT){
             frontRight.setPower(power);
@@ -356,17 +388,17 @@ public class RobotController {
 //        return new Orientation(pos.x, pos.y, 0);
     }
 
-    public int getRawColor(ColorSensor sensor, String color) {
-        if (color == "red") {
+    public int getRawColor(ColorSensor sensor, int color) {
+        if (color == COLOR_RED) {
             return sensor.red();
-        } else if (color == "blue") {
+        } else if (color == COLOR_BLUE) {
             return sensor.blue();
         } else {
-            return 0;
+            return 2;
         }
     }
 
-    public String getColor(ColorSensor sensor, int numberOfScans) {
+    public int getColor(ColorSensor sensor, int numberOfScans) {
 
         int completedScans = 0;
         int totalRed = 0;
@@ -374,60 +406,60 @@ public class RobotController {
 
         while (completedScans < numberOfScans) {
 
-            String rawColor = rawColorScan(sensor);
+            int rawColor = rawColorScan(sensor);
 
-            while (rawColor == "error") {
+            while (rawColor == 2) {
                 rawColor = rawColorScan(sensor);
             }
 
-            if (rawColor == "red") {
+            if (rawColor == COLOR_RED) {
                 totalRed++;
-            } else if (rawColor == "blue") {
+            } else if (rawColor == COLOR_BLUE) {
                 totalBlue++;
             }
 
             completedScans++;
         }
 
-        String totalColor = totalColorScan(sensor, totalRed, totalBlue);
+        int totalColor = totalColorScan(totalRed, totalBlue);
 
-        while (totalColor == "error") {
-            totalColor = totalColorScan(sensor, totalRed, totalBlue);
+        while (totalColor == 2) {
+            totalColor = totalColorScan(totalRed, totalBlue);
         }
 
-        if (totalColor == "red") {
-            return "red";
-        } else if (totalColor == "blue") {
-            return "blue";
+        if (totalColor == COLOR_RED) {
+            return COLOR_RED;
+        } else if (totalColor == COLOR_BLUE) {
+            return COLOR_BLUE;
         }
 
-        // one in a million chance, but it's not hard to fix
-        return "error";
+        // impossible to reach
+        return 2;
     }
 
-    private String rawColorScan(ColorSensor sensor) {
+    private int rawColorScan(ColorSensor sensor) {
 
-        int amountRed = getRawColor(sensor, "red");
-        int amountBlue = getRawColor(sensor, "blue");
+        int amountRed = getRawColor(sensor, COLOR_RED);
+        int amountBlue = getRawColor(sensor, COLOR_BLUE);
 
         if (amountRed > amountBlue) {
-            return "red";
+            return COLOR_RED;
         } else if (amountBlue > amountRed){
-            return "blue";
+            return COLOR_BLUE;
         }
 
         // one in a million chance, but it's not hard to fix
-        return "error";
+        return 2;
     }
 
-    private String totalColorScan(ColorSensor sensor, int totalRed, int totalBlue) {
+    private int totalColorScan(int totalRed, int totalBlue) {
         if (totalRed > totalBlue) {
-            return "red";
+            return COLOR_RED;
         } else if (totalBlue > totalRed)
-            return "blue";
+            return COLOR_BLUE;
 
         // one in a million chance, but it's not hard to fix
-        return "error";
+        return 2;
     }
 
     public double getDistance(DistanceSensor sensor, DistanceUnit unit) {

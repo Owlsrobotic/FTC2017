@@ -78,22 +78,15 @@ public class DriverControl extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            if(gamepad1.y){
-                controller.moveDistance(1.7, .5, RobotController.DIRECTION_FORWARD);
-            }else if(gamepad1.x){
-                controller.moveDistance(1.7, .5, RobotController.DIRECTION_LEFT);
-            }else if(gamepad1.b){
-                controller.moveDistance(1.7, .5, RobotController.DIRECTION_RIGHT);
-            }else if(gamepad1.a){
-                controller.moveDistance(1.7, .5, RobotController.DIRECTION_REVERSE);
+
+           // trapdoor
+            if(gamepad1.dpad_up) {
+                controller.trapdoorMotor.setPower(0.7);
+            }else if(gamepad1.dpad_down) {
+                controller.trapdoorMotor.setPower(-0.7);
             }
 
-            /*}else if(gamepad1.right_bumper){
-                controller.rotate(.7, RobotController.ROTATE_RIGHT);
-            }else if(gamepad1.left_bumper){
-                controller.rotate(.7, RobotController.ROTATE_LEFT);
-            }*/
-
+            // rotation
             if((gamepad1.right_stick_x > 0.1) || (gamepad1.right_stick_x < -0.1)) {
                 if (gamepad1.right_stick_x > 0) {
                     controller.rotate(gamepad1.right_stick_x, RobotController.ROTATE_RIGHT);
@@ -102,6 +95,8 @@ public class DriverControl extends LinearOpMode {
                 }
             }
 
+            /*
+            // translation (x)
             if((gamepad1.left_stick_x > 0.1) || (gamepad1.left_stick_x < -0.1)) {
                 if (gamepad1.left_stick_x > 0) {
                     controller.move(-1 * gamepad1.left_stick_x, RobotController.DIRECTION_LEFT);
@@ -110,31 +105,22 @@ public class DriverControl extends LinearOpMode {
                 }
             }
 
+            // translation (y)
             if((gamepad1.left_stick_y > 0.1) || (gamepad1.left_stick_y < -0.1)) {
                 if (gamepad1.left_stick_y > 0) {
                     controller.move(-1 * gamepad1.left_stick_y, RobotController.DIRECTION_FORWARD);
                 } else if (gamepad1.left_stick_y < 0) {
                     controller.move(gamepad1.left_stick_y, RobotController.DIRECTION_REVERSE);
                 }
+            }*/
+
+            // translation
+            if((gamepad1.left_stick_x > 0.1 || gamepad1.left_stick_x < -0.1) ||
+               (gamepad1.left_stick_y > 0.1 || gamepad1.left_stick_y < -0.1)) {
+                controller.moveDirection(1.0, gamepad1.left_stick_x, gamepad1.left_stick_y);
             }
 
-            if (gamepad1.dpad_up) {
-                controller.moveServo(controller.jewelsArm, 0.545);
-            } else {
-                controller.moveServo(controller.jewelsArm, -.1);
-            }
-
-            if (gamepad1.dpad_right) {
-                controller.rotate(Math.toRadians(90), .5);
-            }
-
-            controller.move(0, RobotController.DIRECTION_FORWARD);
-
-            telemetry.addData("handome lakewe: ", gamepad1.right_stick_x);
-//            telemetry.addData("Imu Calc", controller.getRobotOrientation().toString());
-            controller.move(0, RobotController.DIRECTION_FORWARD);
             telemetry.update();
-            controller.detectVumark();
         }
     }
 }
