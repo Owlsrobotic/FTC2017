@@ -137,12 +137,12 @@ public class RobotController {
 //        imuThread.start();
 
         // autonomous stuff
-        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
-        testDistanceSensor = hmap.get(DistanceSensor.class, "test_distance");
+//        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
+//        testDistanceSensor = hmap.get(DistanceSensor.class, "test_distance");
 
-        digitalTouch.setMode(DigitalChannel.Mode.INPUT);
-        jewelsArm = hmap.servo.get("jewels_arm");
-        jewelsColorSensor = hmap.colorSensor.get("test_color");
+//        digitalTouch.setMode(DigitalChannel.Mode.INPUT);
+//        jewelsArm = hmap.servo.get("jewels_arm");
+//        jewelsColorSensor = hmap.colorSensor.get("test_color");
     }
 
     // angle is in radians

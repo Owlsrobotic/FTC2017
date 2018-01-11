@@ -29,27 +29,9 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.vuforia.Image;
-
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.robotcore.internal.android.dex.util.ExceptionWithContext;
-
-import java.nio.ByteBuffer;
-import java.util.concurrent.BlockingQueue;
 
 
 /**
@@ -71,69 +53,86 @@ public class Tester extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
 
-    //Vuforia fields
-    int cameraMonitorViewId;
-    VuforiaLocalizer.Parameters parameters;
-    VuforiaLocalizer vuforia;
-    VuforiaTrackables relicTrackables;
-    VuforiaTrackable relicTemplate;
-
     @Override
     public void runOpMode() {
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
-
-        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-
-        parameters.vuforiaLicenseKey = "AQfcvgf/////AAAAGdN+qKpBsEVHoQv9Tbl9rEwid5sqZQ/PU7AaS3noa/ht7K7vgAgjR7jdMqq3uv5CZR5l98sacbhIfOjgnl6IAVNMfmbge4tSJcjida+/BmwDbq0QfsTYfsPzQE+86L0xgY7gRnnU++Voak+/mNpFrGAMR66VHgWP1nxM4PqdoqTwAnezheyd35NczIRFBTReI3p3HbbIJiXBmriFO8YMBC0B5/ZD1Euh8yXhj0cTFDR0T4Evjp1bNHOQkiZkFYzg12gpLgiWDJavXhOnb7dUHhKlLzVEZQ/aRaW0YzYJPZQzRE0CF0vo9tZ4EUaCvG1ieBFtu88ZXHJGGsYG5TxJb6iGLzR3iOfNIKhfMZ2az6PC";
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-        vuforia = ClassFactory.createVuforiaLocalizer(parameters);
-
-        relicTrackables = vuforia.loadTrackablesFromAsset("RelicVuMark");
-        relicTemplate = relicTrackables.get(0);
-        relicTemplate.setName("relicVuMarkTemplate");
-
-        relicTrackables.activate();
-
-        BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
-        imuParameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        imuParameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        imuParameters.loggingEnabled = true;
-
-        BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
-        imu.initialize(imuParameters);
-
-        // Wait for the game to start (driver presses PLAY)
+       // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
         RobotController controller = new RobotController(this);
 
         // run until the end of the match (driver presses STOP)
+        boolean isClawClosed = false;
         while (opModeIsActive()) {
-            RelicRecoveryVuMark result = RelicRecoveryVuMark.from(relicTemplate);
-            telemetry.addData("Vumark", result.toString());
-//            context.telemetry.addData("Vumark license", hmap.appContext.getString(R.string.vuforia_license));
+            controller.move(0.0, controller.DIRECTION_FORWARD);
+            controller.leftBeltMotor.setPower(0.0);
+            controller.rightBeltMotor.setPower(0.0);
+            controller.trapdoorMotor.setPower(0.0);
+            controller.elevatorMotor.setPower(0.0);
 
-            telemetry.addData("AccelX", imu.getLinearAcceleration().xAccel);
-            telemetry.addData("AccelY", imu.getLinearAcceleration().yAccel);
-            telemetry.addData("AccelZ", imu.getLinearAcceleration().zAccel);
-            telemetry.addData("GyroX", imu.getAngularVelocity().xRotationRate);
-            telemetry.addData("GyroY", imu.getAngularVelocity().yRotationRate);
-            telemetry.addData("GyroZ", imu.getAngularVelocity().zRotationRate);
+            if (gamepad1.b) {
+                controller.move(1.0, controller.DIRECTION_FORWARD);
+            }
+            if (gamepad1.a) {
+                controller.leftBeltMotor.setPower(0.7);
+                controller.rightBeltMotor.setPower(-0.7);
+            }
+            if (gamepad1.y){
+                controller.trapdoorMotor.setPower(0.7);
+            }
+            if (gamepad1.x) {
+                controller.trapdoorMotor.setPower(-0.7);
+            }
+            if (gamepad1.dpad_up) {
+                controller.elevatorMotor.setPower(-0.6);
+            }
+            if (gamepad1.dpad_down) {
+                controller.elevatorMotor.setPower(0.6);
+            }
+            //Rotate wrist
+            if (gamepad1.right_bumper) {
+                controller.moveServo(controller.wristServo, 1.0);
+            }
+            if (gamepad1.left_bumper) {
+                controller.moveServo(controller.wristServo, 0.3);
+            }
+            if (gamepad1.dpad_right) {
+                controller.moveServo(controller.elbowServo, 1.0);
+            }
+            if (gamepad1.dpad_left) {
+                controller.moveServo(controller.elbowServo, 0.0);
+            }
 
-            telemetry.update();
+            //Toggle claw state
+            if (gamepad1.start) {
+                isClawClosed = !isClawClosed;
+            }
+            //Open/Close claws
+            if (isClawClosed) {
+                controller.manipulateClaws(controller.CLAW_CLOSED);
+            } else {
+                controller.manipulateClaws(controller.CLAW_OPEN);
+            }
 
-//            if(gamepad1.y){
-//                controller.moveDistance(1.7, .5, RobotController.DIRECTION_FOWARD);
-//            }else if(gamepad1.x){
-//                controller.moveDistance(1.7, .5, RobotController.DIRECTION_LEFT);
-//            }else if(gamepad1.b){
-//                controller.moveDistance(1.7, .5, RobotController.DIRECTION_RIGHT);
-//            }else if(gamepad1.a){
-//                controller.moveDistance(1.7, .5, RobotController.DIRECTION_REVERSE);
-//            }
+            if (gamepad2.dpad_up) {
+                controller.moveDistance(1.0, 0.7, controller.DIRECTION_FORWARD);
+            }
+            if (gamepad2.dpad_down) {
+                controller.moveDistance(1.0, 0.7, controller.DIRECTION_REVERSE);
+            }
+            if (gamepad2.dpad_right) {
+                controller.moveDistance(1.0, 0.7, controller.DIRECTION_RIGHT);
+            }
+            if (gamepad2.dpad_left) {
+                controller.moveDistance(1.0, 0.7, controller.DIRECTION_LEFT);
+            }
+            if (gamepad2.right_bumper) {
+                controller.rotate(Math.toRadians(90), 0.7);
+            }
+            if (gamepad2.left_bumper) {
+                controller.rotate(Math.toRadians(-90), 0.7);
+            }
+
         }
     }
 }

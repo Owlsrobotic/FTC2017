@@ -31,7 +31,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
@@ -53,9 +52,8 @@ public class DriverControl extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
 
+    private double stickThreshold = 0.1;
     RobotController controller;
 
     @Override
@@ -69,72 +67,58 @@ public class DriverControl extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        DcMotor fl = hardwareMap.dcMotor.get("front_left");
-        DcMotor fr = hardwareMap.dcMotor.get("front_right");
-        DcMotor bl = hardwareMap.dcMotor.get("back_left");
-        DcMotor br = hardwareMap.dcMotor.get("back_right");
-
-        controller.moveServo(controller.jewelsArm, 0);
-
         // run until the end of the match (driver presses STOP)
+        boolean isClawClosed = false;
         while (opModeIsActive()) {
-            if(gamepad1.y){
-                controller.moveDistance(1.7, .5, RobotController.DIRECTION_FORWARD);
-            }else if(gamepad1.x){
-                controller.moveDistance(1.7, .5, RobotController.DIRECTION_LEFT);
-            }else if(gamepad1.b){
-                controller.moveDistance(1.7, .5, RobotController.DIRECTION_RIGHT);
-            }else if(gamepad1.a){
-                controller.moveDistance(1.7, .5, RobotController.DIRECTION_REVERSE);
+            controller.move(0.0, controller.DIRECTION_FORWARD);
+            controller.leftBeltMotor.setPower(0.0);
+            controller.rightBeltMotor.setPower(0.0);
+            controller.trapdoorMotor.setPower(0.0);
+            controller.elevatorMotor.setPower(0.0);
+
+            //Toggle claw state
+            if (gamepad2.a) {
+                isClawClosed = !isClawClosed;
+            }
+            //Rotate wrist
+            if (gamepad2.right_bumper) {
+                controller.moveServo(controller.wristServo, 1.0);
+            }
+            if (gamepad2.left_bumper) {
+                controller.moveServo(controller.wristServo, 0.3);
+            }
+            //Manipulate elbow
+            if (gamepad2.b) {
+                controller.moveServo(controller.elbowServo, 1.0);
+            }
+            if (gamepad2.x) {
+                controller.moveServo(controller.elbowServo, 0.0);
+            }
+            //Move elevator
+            if (gamepad2.dpad_up) {
+                controller.elevatorMotor.setPower(0.6);
+            }
+            if (gamepad2.dpad_down) {
+                controller.elevatorMotor.setPower(-0.6);
+            }
+            //Move belts
+            if (gamepad2.left_stick_y > stickThreshold || gamepad2.left_stick_y < -1.0 * stickThreshold) {
+                controller.leftBeltMotor.setPower(gamepad2.left_stick_y);
+            }
+            if (gamepad2.right_stick_y > stickThreshold || gamepad2.right_stick_y < -1.0 * stickThreshold) {
+                controller.leftBeltMotor.setPower(gamepad2.right_stick_y);
+            }
+            if (gamepad2.y) {
+                controller.leftBeltMotor.setPower(0.7);
+                controller.rightBeltMotor.setPower(-0.7);
             }
 
-            /*}else if(gamepad1.right_bumper){
-                controller.rotate(.7, RobotController.ROTATE_RIGHT);
-            }else if(gamepad1.left_bumper){
-                controller.rotate(.7, RobotController.ROTATE_LEFT);
-            }*/
-
-            if((gamepad1.right_stick_x > 0.1) || (gamepad1.right_stick_x < -0.1)) {
-                if (gamepad1.right_stick_x > 0) {
-                    controller.rotate(gamepad1.right_stick_x, RobotController.ROTATE_RIGHT);
-                } else if (gamepad1.right_stick_x < 0) {
-                    controller.rotate(-1 * gamepad1.right_stick_x, RobotController.ROTATE_LEFT);
-                }
-            }
-
-            if((gamepad1.left_stick_x > 0.1) || (gamepad1.left_stick_x < -0.1)) {
-                if (gamepad1.left_stick_x > 0) {
-                    controller.move(-1 * gamepad1.left_stick_x, RobotController.DIRECTION_LEFT);
-                } else if (gamepad1.left_stick_x < 0) {
-                    controller.move(gamepad1.left_stick_x, RobotController.DIRECTION_RIGHT);
-                }
-            }
-
-            if((gamepad1.left_stick_y > 0.1) || (gamepad1.left_stick_y < -0.1)) {
-                if (gamepad1.left_stick_y > 0) {
-                    controller.move(-1 * gamepad1.left_stick_y, RobotController.DIRECTION_FORWARD);
-                } else if (gamepad1.left_stick_y < 0) {
-                    controller.move(gamepad1.left_stick_y, RobotController.DIRECTION_REVERSE);
-                }
-            }
-
-            if (gamepad1.dpad_up) {
-                controller.moveServo(controller.jewelsArm, 0.545);
+            //Open/Close claws
+            if (isClawClosed) {
+                controller.manipulateClaws(controller.CLAW_CLOSED);
             } else {
-                controller.moveServo(controller.jewelsArm, -.1);
+                controller.manipulateClaws(controller.CLAW_OPEN);
             }
-
-            if (gamepad1.dpad_right) {
-                controller.rotate(Math.toRadians(90), .5);
-            }
-
-            controller.move(0, RobotController.DIRECTION_FORWARD);
-
-            telemetry.addData("handome lakewe: ", gamepad1.right_stick_x);
-//            telemetry.addData("Imu Calc", controller.getRobotOrientation().toString());
-            controller.move(0, RobotController.DIRECTION_FORWARD);
-            telemetry.update();
-            controller.detectVumark();
         }
     }
 }
