@@ -149,11 +149,18 @@ public class RobotController {
 //        imuThread = new Thread(imuCalc);
 //        imuThread.start();
 
-
+        // autonomous stuff
+//        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
+//        testDistanceSensor = hmap.get(DistanceSensor.class, "test_distance");
 
 //        digitalTouch.setMode(DigitalChannel.Mode.INPUT);
         jewelsArm = hmap.servo.get("jewels_arm");
         jewelsColorSensor = hmap.colorSensor.get("test_color");
+
+
+//        digitalTouch.setMode(DigitalChannel.Mode.INPUT);
+//        jewelsArm = hmap.servo.get("jewels_arm");
+//        jewelsColorSensor = hmap.colorSensor.get("test_color");
     }
 
     // angle is in radians
@@ -477,11 +484,11 @@ public class RobotController {
 
     public void manipulateClaws(int position) {
         if(position == CLAW_CLOSED) {
-            moveServo(leftClaw, 1.0);
-            moveServo(rightClaw, 0.0);
+            moveServo(leftClaw, 0.0);
+            moveServo(rightClaw, 1.0);
         } else if (position == CLAW_OPEN) {
-            moveServo(leftClaw, .4);
-            moveServo(rightClaw, .7);
+            moveServo(leftClaw, 0.33);
+            moveServo(rightClaw, 0.66);
         }
     }
 }
