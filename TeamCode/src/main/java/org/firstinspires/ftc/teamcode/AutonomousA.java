@@ -70,93 +70,76 @@ public class AutonomousA extends LinearOpMode {
         controller.jewelsColorSensor.enableLed(true);
 
         // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
-            /*
-            // jewel recognition
-            controller.moveServo(controller.jewelsArm, 0.56);
-
-            // wait for servo to get into position then get color reading
+        if (opModeIsActive()) {
             try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
+                // image recognition
+                controller.rotateAngle(Math.toRadians(40), 0.55);
+                RelicRecoveryVuMark mark = controller.detectVumark();
+                Thread.sleep(2100);
+                controller.rotateAngle(Math.toRadians(-40), 0.55);
+                telemetry.addData("VUMARK: ", mark.toString());
+                telemetry.update();
+
+                // align for blunt
+                controller.rotateAngle(Math.toRadians(-23), 0.55);
+
+                // color sensor
+                controller.moveServo(controller.jewelsArm, 0.0);
+
+                Thread.sleep(2000);
+
+                if (controller.getColor(controller.jewelsColorSensor, 10) == controller.COLOR_RED) {
+                    controller.rotateAngle(Math.toRadians(-25), 0.55);
+                    Thread.sleep(2000);
+                    controller.moveServo(controller.jewelsArm, 1.0);
+                    Thread.sleep(2000);
+                    controller.rotateAngle(Math.toRadians(25), 0.55);
+                } else {
+                    controller.rotateAngle(Math.toRadians(-25), 0.55);
+                    Thread.sleep(2000);
+                    controller.moveServo(controller.jewelsArm, 1);
+                    Thread.sleep(2000);
+                    controller.rotateAngle(Math.toRadians(25), 0.55);
+                }
+
+                // get bot's ass back in position
+                controller.rotateAngle(Math.toRadians(23), 0.55);
+                Thread.sleep(2000);
+
+                // do each case and shit
+                switch (mark) {
+                    case LEFT:
+                        controller.moveDistance(0.71, 0.1, controller.DIRECTION_FORWARD);
+                        break;
+                    case CENTER:
+                        controller.moveDistance(0.89, 0.1, controller.DIRECTION_FORWARD);
+                        break;
+                    case RIGHT:
+                        controller.moveDistance(1.0, 0.1, controller.DIRECTION_FORWARD);
+                        break;
+                }
+
+                // lemme slide in bruh
+                Thread.sleep(2000);
+                controller.rotateAngle(Math.toRadians(90), 0.3);
+                Thread.sleep(2000);
+                controller.moveDistance(0.25, 0.5, controller.DIRECTION_FORWARD);
+
+                // push that shit homie
+                controller.leftBeltMotor.setPower(0.5);
+                controller.rightBeltMotor.setPower(-0.5);
+
+                Thread.sleep(2000);
+
+                // stop conveyor
+                controller.leftBeltMotor.setPower(0);
+                controller.rightBeltMotor.setPower(0);
+            }
+
+            catch (InterruptedException e)
+            {
                 e.printStackTrace();
             }
-
-            int color = controller.getColor(controller.jewelsColorSensor, 10);
-
-
-            if(color==1) {
-                controller.moveDistance(0.1, 0.1, controller.DIRECTION_REVERSE);
-                controller.moveServo(controller.jewelsArm, 0);
-                controller.moveDistance(-0.1, 0.1, controller.DIRECTION_REVERSE);
-            } else {
-                controller.moveDistance(-0.1, 0.1, controller.DIRECTION_REVERSE);
-                controller.moveServo(controller.jewelsArm, 0);
-                controller.moveDistance(0.1, 0.1, controller.DIRECTION_REVERSE);
-            }*/
-
-
-            // image recognition
-            controller.rotate(Math.toRadians(30), 0.5);
-            RelicRecoveryVuMark mark = controller.detectVumark();
-            controller.rotate(Math.toRadians(30), 0.5);
-
-            telemetry.addData("VUMARK: ", mark.toString());
-            telemetry.update();
-
-            switch (mark) {
-                case LEFT:
-                    controller.moveDistance(.5, .1, controller.DIRECTION_LEFT);
-                    break;
-                case CENTER:
-                    controller.rotate(Math.toRadians(45), .5);
-                    break;
-                case RIGHT:
-                    controller.rotate(Math.toRadians(-45), .5);
-                    break;
-            }
-            break;
-            /*while(runtime.time(TimeUnit.SECONDS) < 5) {
-                telemetry.addData("blue", telemetry.addData("blue", controller.testColorSensor.blue()));
-                telemetry.addData("green", controller.testColorSensor.green());
-                telemetry.addData("red", controller.testColorSensor.red());
-                telemetry.update();
-            }
-
-            controller.move(0.15, DIRECTION_FORWARD);
-
-
-            for(int i=0; i<1; i++) {
-                while (controller.getDistance(controller.testDistanceSensor, DistanceUnit.CM) > 10 || Double.isNaN(controller.getDistance(controller.testDistanceSensor, DistanceUnit.CM))) {
-                    telemetry.addData("Distance: ", controller.getDistance(controller.testDistanceSensor, DistanceUnit.CM));
-                    telemetry.update();
-                }
-            }
-
-            controller.move(0, DIRECTION_FORWARD);
-
-            if(controller.getColor(controller.testColorSensor, 10) == "blue") {
-                telemetry.addData("blue", controller.testColorSensor.blue());
-                controller.moveDistance(0.3, 1.0, DIRECTION_LEFT);
-            }
-            else if(controller.getColor(controller.testColorSensor, 10) == "red") {
-                controller.moveDistance(0.3, 1.0, DIRECTION_RIGHT);
-            }
-            else if(controller.getColor(controller.testColorSensor, 10) == "green") {
-                controller.moveDistance(0.3, 1.0, DIRECTION_REVERSE);
-            }
-
-            controller.move(0.4, DIRECTION_FORWARD);
-
-            for(int i=0; i<1; i++) {
-                while (controller.digitalTouch.getState() == true) { // inverse because whoever designed this is stupid
-                    telemetry.addData("Distance: ", controller.getDistance(controller.testDistanceSensor, DistanceUnit.CM));
-                    telemetry.addData("State: ", controller.digitalTouch.getState());
-                    telemetry.update();
-                }
-            }
-
-            controller.move(0, DIRECTION_FORWARD);*/
         }
     }
 }

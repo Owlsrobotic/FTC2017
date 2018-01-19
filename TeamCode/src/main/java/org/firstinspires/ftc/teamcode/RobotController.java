@@ -116,8 +116,8 @@ public class RobotController {
         rightBeltMotor = hmap.dcMotor.get("right_belt");
 
         // autonomous stuff
-        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
-        distanceSensor = hmap.get(DistanceSensor.class, "test_distance");
+//        digitalTouch = hmap.get(DigitalChannel.class, "test_touch");
+//        distanceSensor = hmap.get(DistanceSensor.class, "test_distance");
 
         //Setting up Vuforia
         cameraMonitorViewId = hmap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hmap.appContext.getPackageName());
@@ -157,7 +157,7 @@ public class RobotController {
     }
 
     // angle is in radians
-    public void rotate(double angle, double power){
+    public void rotateAngle(double angle, double power){
         double distance = ROTATION_RADIUS * angle;
 
         // reset all motors
@@ -183,25 +183,25 @@ public class RobotController {
         frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+
+    frontLeft.setTargetPosition(newFrontLeftTarget);
+    backLeft.setTargetPosition(newBackLeftTarget);
+    frontRight.setTargetPosition(newFrontRightTarget);
+    backRight.setTargetPosition(newBackRightTarget);
 	//NOTE: Left side has reversed polarity
 	if(angle > 0){
 		//Rotate Clockwise: Left side moves foward while right side moves backward
-		frontLeft.setTargetPosition(-1 * newFrontLeftTarget);
-        	backLeft.setTargetPosition(-1 * newBackLeftTarget);
-        	frontRight.setTargetPosition(-1 * newFrontRightTarget);
-        	backRight.setTargetPosition(-1 * newBackRightTarget);
+        frontLeft.setPower(-1 * power);
+        backLeft.setPower(-1 * power);
+        frontRight.setPower(-1 * power);
+        backRight.setPower(-1 * power);
 	}else{
 		//Rotate Counter-Clockwise: Right side moves foward while left side moves backward
-		frontLeft.setTargetPosition(newFrontLeftTarget);
-        	backLeft.setTargetPosition(newBackLeftTarget);
-        	frontRight.setTargetPosition(newFrontRightTarget);
-        	backRight.setTargetPosition(newBackRightTarget);
-	}
-       
         frontLeft.setPower(power);
         backLeft.setPower(power);
         frontRight.setPower(power);
         backRight.setPower(power);
+	}
 
         while(frontRight.isBusy() || backRight.isBusy() || frontLeft.isBusy() || frontRight.isBusy()){
            //Do nothing while busy
