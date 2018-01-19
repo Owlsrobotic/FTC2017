@@ -53,7 +53,7 @@ public class DriverControl extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
 
-    private double stickThreshold = 0.1;
+    private double stickThreshold = 0.2;
     RobotController controller;
 
     @Override
@@ -68,9 +68,9 @@ public class DriverControl extends LinearOpMode {
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
-        boolean isClawClosed = false;
+        boolean isClawClosed = true;
         while (opModeIsActive()) {
-            controller.move(0.0, controller.DIRECTION_FORWARD);
+            controller.moveServo(controller.jewelsArm, 1.0);
             controller.leftBeltMotor.setPower(0.0);
             controller.rightBeltMotor.setPower(0.0);
             controller.trapdoorMotor.setPower(0.0);
@@ -89,24 +89,24 @@ public class DriverControl extends LinearOpMode {
             }
             //Manipulate elbow
             if (gamepad2.b) {
-                controller.moveServo(controller.elbowServo, 1.0);
+                controller.moveServo(controller.elbowServo, 0.6);
             }
             if (gamepad2.x) {
-                controller.moveServo(controller.elbowServo, 0.0);
+                controller.moveServo(controller.elbowServo, 0.1);
             }
             //Move elevator
             if (gamepad2.dpad_up) {
-                controller.elevatorMotor.setPower(0.6);
+                controller.elevatorMotor.setPower(-0.6);
             }
             if (gamepad2.dpad_down) {
-                controller.elevatorMotor.setPower(-0.6);
+                controller.elevatorMotor.setPower(0.6);
             }
             //Move belts
             if (gamepad2.left_stick_y > stickThreshold || gamepad2.left_stick_y < -1.0 * stickThreshold) {
-                controller.leftBeltMotor.setPower(gamepad2.left_stick_y);
+                controller.leftBeltMotor.setPower(-1.0 * gamepad2.left_stick_y);
             }
             if (gamepad2.right_stick_y > stickThreshold || gamepad2.right_stick_y < -1.0 * stickThreshold) {
-                controller.leftBeltMotor.setPower(gamepad2.right_stick_y);
+                controller.rightBeltMotor.setPower(gamepad2.right_stick_y);
             }
             if (gamepad2.y) {
                 controller.leftBeltMotor.setPower(0.7);
@@ -119,6 +119,32 @@ public class DriverControl extends LinearOpMode {
             } else {
                 controller.manipulateClaws(controller.CLAW_OPEN);
             }
+
+           // trapdoor
+            if(gamepad1.dpad_up) {
+                controller.trapdoorMotor.setPower(0.7);
+            }else if(gamepad1.dpad_down) {
+                controller.trapdoorMotor.setPower(-0.7);
+            }
+
+            // rotation
+            if((gamepad1.right_stick_x > stickThreshold) || (gamepad1.right_stick_x < -1.0 * stickThreshold)) {
+                if (gamepad1.right_stick_x > 0) {
+                    controller.rotate(gamepad1.right_stick_x, RobotController.ROTATE_RIGHT);
+                } else if (gamepad1.right_stick_x < 0) {
+                    controller.rotate(-1 * gamepad1.right_stick_x, RobotController.ROTATE_LEFT);
+                }
+            }
+
+            // translation
+            if((gamepad1.left_stick_x > stickThreshold || gamepad1.left_stick_x < -1.0 * stickThreshold) ||
+               (gamepad1.left_stick_y > stickThreshold || gamepad1.left_stick_y < -1.0 * stickThreshold)) {
+                controller.moveDirection(0.5, gamepad1.left_stick_x, gamepad1.left_stick_y);
+            } else {
+                controller.move(0.0, controller.DIRECTION_FORWARD);
+            }
+
+            telemetry.update();
         }
     }
 }

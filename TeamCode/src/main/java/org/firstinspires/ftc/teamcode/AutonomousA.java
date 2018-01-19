@@ -71,20 +71,21 @@ public class AutonomousA extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-
+            /*
             // jewel recognition
             controller.moveServo(controller.jewelsArm, 0.56);
-            //Wait for servo to get into position then get color reading
+
+            // wait for servo to get into position then get color reading
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-            String color = controller.getColor(controller.jewelsColorSensor, 10);
+            int color = controller.getColor(controller.jewelsColorSensor, 10);
 
 
-            if(color=="blue") {
+            if(color==1) {
                 controller.moveDistance(0.1, 0.1, controller.DIRECTION_REVERSE);
                 controller.moveServo(controller.jewelsArm, 0);
                 controller.moveDistance(-0.1, 0.1, controller.DIRECTION_REVERSE);
@@ -92,13 +93,17 @@ public class AutonomousA extends LinearOpMode {
                 controller.moveDistance(-0.1, 0.1, controller.DIRECTION_REVERSE);
                 controller.moveServo(controller.jewelsArm, 0);
                 controller.moveDistance(0.1, 0.1, controller.DIRECTION_REVERSE);
-            }
+            }*/
+
 
             // image recognition
-            controller.moveDistance(.4, .1, controller.DIRECTION_FORWARD);
+            controller.rotate(Math.toRadians(30), 0.5);
             RelicRecoveryVuMark mark = controller.detectVumark();
+            controller.rotate(Math.toRadians(30), 0.5);
+
             telemetry.addData("VUMARK: ", mark.toString());
             telemetry.update();
+
             switch (mark) {
                 case LEFT:
                     controller.moveDistance(.5, .1, controller.DIRECTION_LEFT);
