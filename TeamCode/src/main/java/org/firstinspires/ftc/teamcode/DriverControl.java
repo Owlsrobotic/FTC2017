@@ -78,6 +78,11 @@ public class DriverControl extends LinearOpMode {
 
             //Toggle claw state
             if (gamepad2.a) {
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 isClawClosed = !isClawClosed;
             }
             //Rotate wrist
@@ -129,17 +134,13 @@ public class DriverControl extends LinearOpMode {
 
             // rotation
             if((gamepad1.right_stick_x > stickThreshold) || (gamepad1.right_stick_x < -1.0 * stickThreshold)) {
-                if (gamepad1.right_stick_x > 0) {
-                    controller.rotate(gamepad1.right_stick_x, RobotController.ROTATE_RIGHT);
-                } else if (gamepad1.right_stick_x < 0) {
-                    controller.rotate(-1 * gamepad1.right_stick_x, RobotController.ROTATE_LEFT);
-                }
+                controller.rotate(gamepad1.right_stick_x, RobotController.ROTATE_RIGHT);
             }
 
             // translation
             if((gamepad1.left_stick_x > stickThreshold || gamepad1.left_stick_x < -1.0 * stickThreshold) ||
                (gamepad1.left_stick_y > stickThreshold || gamepad1.left_stick_y < -1.0 * stickThreshold)) {
-                controller.moveDirection(0.5, gamepad1.left_stick_x, gamepad1.left_stick_y);
+                controller.moveDirection(0.5, -1 * gamepad1.left_stick_x, gamepad1.left_stick_y);
             } else {
                 controller.move(0.0, controller.DIRECTION_FORWARD);
             }

@@ -406,42 +406,20 @@ public class RobotController {
     }
 
     public int getColor(ColorSensor sensor, int numberOfScans) {
+        int blueReads = 0;
+        int redReads = 0;
 
-        int completedScans = 0;
-        int totalRed = 0;
-        int totalBlue = 0;
-
-        while (completedScans < numberOfScans) {
-
-            int rawColor = rawColorScan(sensor);
-
-            while (rawColor == 2) {
-                rawColor = rawColorScan(sensor);
+        for (int i = 0; i < numberOfScans; i++) {
+            int r = sensor.red();
+            int b = sensor.blue();
+            if (r >= b) {
+                redReads++;
+            } else if (b > r) {
+                blueReads++;
             }
-
-            if (rawColor == COLOR_RED) {
-                totalRed++;
-            } else if (rawColor == COLOR_BLUE) {
-                totalBlue++;
-            }
-
-            completedScans++;
         }
 
-        int totalColor = totalColorScan(totalRed, totalBlue);
-
-        while (totalColor == 2) {
-            totalColor = totalColorScan(totalRed, totalBlue);
-        }
-
-        if (totalColor == COLOR_RED) {
-            return COLOR_RED;
-        } else if (totalColor == COLOR_BLUE) {
-            return COLOR_BLUE;
-        }
-
-        // impossible to reach
-        return 2;
+        return (blueReads > redReads) ? COLOR_BLUE : COLOR_RED;
     }
 
     private int rawColorScan(ColorSensor sensor) {

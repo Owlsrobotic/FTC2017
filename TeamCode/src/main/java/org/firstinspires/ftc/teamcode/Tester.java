@@ -54,85 +54,44 @@ public class Tester extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException {
        // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
         RobotController controller = new RobotController(this);
 
+        double rotationFactorHigh = 10;
+        double rotationFactorLow = 0;
+        double rotationFactor = 5;
+
         // run until the end of the match (driver presses STOP)
-        boolean isClawClosed = false;
         while (opModeIsActive()) {
-            controller.move(0.0, controller.DIRECTION_FORWARD);
-            controller.leftBeltMotor.setPower(0.0);
-            controller.rightBeltMotor.setPower(0.0);
-            controller.trapdoorMotor.setPower(0.0);
-            controller.elevatorMotor.setPower(0.0);
-
-            if (gamepad1.b) {
-                controller.move(1.0, controller.DIRECTION_FORWARD);
+//            telemetry.addData("Red", controller.jewelsColorSensor.red());
+//            telemetry.addData("Green", controller.jewelsColorSensor.green());
+//            telemetry.addData("Blue", controller.jewelsColorSensor.blue());
+            if(gamepad1.start) {
+                int color = controller.getColor(controller.jewelsColorSensor, 50);
+                telemetry.addData("Is Red?", color == controller.COLOR_RED);
+                telemetry.addData("Is Blue?", color == controller.COLOR_BLUE);
             }
+
             if (gamepad1.a) {
-                controller.leftBeltMotor.setPower(0.7);
-                controller.rightBeltMotor.setPower(-0.7);
+                controller.rotateAngle(Math.toRadians(90) * rotationFactor, 0.5);
             }
-            if (gamepad1.y){
-                controller.trapdoorMotor.setPower(0.7);
+            if(gamepad1.right_bumper){
+                rotationFactorHigh = rotationFactor;
+                rotationFactor = (rotationFactorHigh + rotationFactorLow) / 2.0;
             }
-            if (gamepad1.x) {
-                controller.trapdoorMotor.setPower(-0.7);
-            }
-            if (gamepad1.dpad_up) {
-                controller.elevatorMotor.setPower(-0.6);
-            }
-            if (gamepad1.dpad_down) {
-                controller.elevatorMotor.setPower(0.6);
-            }
-            //Rotate wrist
-            if (gamepad1.right_bumper) {
-                controller.moveServo(controller.wristServo, 1.0);
-            }
-            if (gamepad1.left_bumper) {
-                controller.moveServo(controller.wristServo, 0.3);
-            }
-            if (gamepad1.dpad_right) {
-                controller.moveServo(controller.elbowServo, 1.0);
-            }
-            if (gamepad1.dpad_left) {
-                controller.moveServo(controller.elbowServo, 0.0);
+            if(gamepad1.left_bumper) {
+                rotationFactorLow = rotationFactor;
+                rotationFactor = (rotationFactorHigh + rotationFactorLow) / 2.0;
             }
 
-            //Toggle claw state
-            if (gamepad1.start) {
-                isClawClosed = !isClawClosed;
-            }
-            //Open/Close claws
-            if (isClawClosed) {
-                controller.manipulateClaws(controller.CLAW_CLOSED);
-            } else {
-                controller.manipulateClaws(controller.CLAW_OPEN);
-            }
+            telemetry.addData("Rotation Factor", rotationFactor);
+            telemetry.update();
 
-            if (gamepad2.dpad_up) {
-                controller.moveDistance(1.0, 0.7, controller.DIRECTION_FORWARD);
-            }
-            if (gamepad2.dpad_down) {
-                controller.moveDistance(1.0, 0.7, controller.DIRECTION_REVERSE);
-            }
-            if (gamepad2.dpad_right) {
-                controller.moveDistance(1.0, 0.7, controller.DIRECTION_RIGHT);
-            }
-            if (gamepad2.dpad_left) {
-                controller.moveDistance(1.0, 0.7, controller.DIRECTION_LEFT);
-            }
-            if (gamepad2.right_bumper) {
-                controller.rotate(Math.toRadians(90), 0.7);
-            }
-            if (gamepad2.left_bumper) {
-                controller.rotate(Math.toRadians(-90), 0.7);
-            }
-
+            Thread.sleep(1000);
         }
     }
 }
