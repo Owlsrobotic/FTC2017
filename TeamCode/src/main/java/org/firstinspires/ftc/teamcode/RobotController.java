@@ -166,6 +166,7 @@ public class RobotController {
     // angle is in radians
     public void rotateAngle(double angle, double power){
         double distance = ROTATION_RADIUS * angle;
+        long timeout = 3000;
 
         // reset all motors
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -195,6 +196,9 @@ public class RobotController {
     backLeft.setTargetPosition(newBackLeftTarget);
     frontRight.setTargetPosition(newFrontRightTarget);
     backRight.setTargetPosition(newBackRightTarget);
+
+    long currentTime = System.currentTimeMillis();
+
 	//NOTE: Left side has reversed polarity
 	if(angle > 0){
 		//Rotate Clockwise: Left side moves foward while right side moves backward
@@ -210,14 +214,20 @@ public class RobotController {
         backRight.setPower(power);
 	}
 
-        while(frontRight.isBusy() || backRight.isBusy() || frontLeft.isBusy() || frontRight.isBusy()){
-           //Do nothing while busy
-        }
+//        while(frontRight.isBusy() || backRight.isBusy() || frontLeft.isBusy() || frontRight.isBusy()){
+//           //Do nothing while busy
+//        }
 
-        frontLeft.setPower(0);
-        backLeft.setPower(0);
-        frontRight.setPower(0);
-        backRight.setPower(0);
+        while (true) {
+            if (System.currentTimeMillis() - currentTime > timeout || !(frontRight.isBusy() || backRight.isBusy() || frontLeft.isBusy() || frontRight.isBusy())) {
+                frontLeft.setPower(0);
+                backLeft.setPower(0);
+                frontRight.setPower(0);
+                backRight.setPower(0);
+
+                break;
+            }
+        }
 
         //Turn off run to position
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -226,7 +236,8 @@ public class RobotController {
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void moveDistance(double distance, double power, int direction){
+    public void moveDistance(double distance, double power, int direction, long timeout){
+
         //Reset all motors
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -284,30 +295,23 @@ public class RobotController {
         frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        long currentTime = System.currentTimeMillis();
+
         frontLeft.setPower(power);
         backLeft.setPower(power);
         frontRight.setPower(power);
         backRight.setPower(power);
 
-        int i = 0;
-        while(frontRight.isBusy() || backRight.isBusy() || frontLeft.isBusy() || frontRight.isBusy()){
-	    //Telemetry
-            context.telemetry.addData("frontLeft", frontLeft.isBusy());
-            context.telemetry.addData("frontRight", frontRight.isBusy());
-            context.telemetry.addData("backLeft", backLeft.isBusy());
-            context.telemetry.addData("backRight", backRight.isBusy());
-            context.telemetry.addData("direction", test);
+        while (true) {
+            if (System.currentTimeMillis() - currentTime > timeout || !(frontRight.isBusy() || backRight.isBusy() || frontLeft.isBusy() || frontRight.isBusy())) {
+                frontLeft.setPower(0);
+                backLeft.setPower(0);
+                frontRight.setPower(0);
+                backRight.setPower(0);
 
-            context.telemetry.addData("Iteration", ++i);
-
-
-            context.telemetry.update();
+                break;
+            }
         }
-
-        frontLeft.setPower(0);
-        backLeft.setPower(0);
-        frontRight.setPower(0);
-        backRight.setPower(0);
 
         //Turn off run to position
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);

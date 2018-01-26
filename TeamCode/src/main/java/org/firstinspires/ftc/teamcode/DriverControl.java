@@ -70,11 +70,17 @@ public class DriverControl extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         boolean isClawClosed = true;
         while (opModeIsActive()) {
-            controller.moveServo(controller.jewelsArm, 1.0);
             controller.leftBeltMotor.setPower(0.0);
             controller.rightBeltMotor.setPower(0.0);
             controller.trapdoorMotor.setPower(0.0);
             controller.elevatorMotor.setPower(0.0);
+
+            //Emergency move jewel arm
+            if (gamepad2.start) {
+                controller.moveServo(controller.jewelsArm, 0.3);
+            } else {
+                controller.moveServo(controller.jewelsArm, 1.0);
+            }
 
             //Toggle claw state
             if (gamepad2.a) {
@@ -132,17 +138,17 @@ public class DriverControl extends LinearOpMode {
                 controller.trapdoorMotor.setPower(-0.7);
             }
 
-            // rotation
-            if((gamepad1.right_stick_x > stickThreshold) || (gamepad1.right_stick_x < -1.0 * stickThreshold)) {
-                controller.rotate(gamepad1.right_stick_x, RobotController.ROTATE_RIGHT);
-            }
-
             // translation
             if((gamepad1.left_stick_x > stickThreshold || gamepad1.left_stick_x < -1.0 * stickThreshold) ||
                (gamepad1.left_stick_y > stickThreshold || gamepad1.left_stick_y < -1.0 * stickThreshold)) {
                 controller.moveDirection(0.5, -1 * gamepad1.left_stick_x, gamepad1.left_stick_y);
             } else {
                 controller.move(0.0, controller.DIRECTION_FORWARD);
+            }
+
+            // rotation
+            if((gamepad1.right_stick_x > stickThreshold) || (gamepad1.right_stick_x < -1.0 * stickThreshold)) {
+                controller.rotate(gamepad1.right_stick_x, RobotController.ROTATE_RIGHT);
             }
 
             telemetry.update();

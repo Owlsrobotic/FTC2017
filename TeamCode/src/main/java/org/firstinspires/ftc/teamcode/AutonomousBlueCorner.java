@@ -49,8 +49,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="BlueCrypto", group="Linear Opmode")
-public class AutonomousBlueCrypto extends LinearOpMode {
+@Autonomous(name="BlueCorner", group="Linear Opmode")
+public class AutonomousBlueCorner extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
     RobotController controller;
@@ -93,7 +93,7 @@ public class AutonomousBlueCrypto extends LinearOpMode {
 
                 if (controller.getColor(controller.jewelsColorSensor, 25) == controller.COLOR_RED) {
                     controller.rotateAngle(Math.toRadians(25), 1);
-                    controller.moveServo(controller.jewelsArm, 1.0);
+                    controller.moveServo(controller.jewelsArm, 1);
                     controller.rotateAngle(Math.toRadians(-25), 1);
                 } else {
                     controller.rotateAngle(Math.toRadians(-25), 1);
@@ -104,29 +104,25 @@ public class AutonomousBlueCrypto extends LinearOpMode {
                 // get bot's ass back in position
                 controller.rotateAngle(Math.toRadians(15), 1);
 
-                //get bot near crypto (tape)
-                controller.moveDistance(0.61, 0.3, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT * 5);
-                controller.rotateAngle(Math.toRadians(-90 * GROUND_ROTATION_FACTOR), 1);
-
                 // do each case and shit
                 switch (mark) {
                     case LEFT:
-                        controller.moveDistance(0.12, 1, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT * 5);
+                        controller.moveDistance(0.71, 0.3, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT* 7);
                         break;
                     case CENTER:
-                        controller.moveDistance(0.31, 1, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT * 5);
+                        controller.moveDistance(0.89, 0.3, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT * 7);
                         break;
                     case RIGHT:
-                        controller.moveDistance(0.5, 1, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT * 5);
+                        controller.moveDistance(1.08, 0.3, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT * 8);
                         break;
                     case UNKNOWN:
-                        controller.moveDistance(0.31, 1, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT * 5);
+                        controller.moveDistance(0.89, 0.3, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT * 7);
                         break;
                 }
 
                 // lemme slide in bruh
                 controller.rotateAngle(Math.toRadians(90 * GROUND_ROTATION_FACTOR), 1);
-                controller.moveDistance(0.3, 1, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT * 2);
+                controller.moveDistance(0.30, 1, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT * 2);
 
                 // push that shit homie
                 controller.leftBeltMotor.setPower(0.5);

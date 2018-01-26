@@ -33,6 +33,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -47,11 +49,15 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="RedCrypto", group="Red")
+@Autonomous(name="RedCrypto", group="Linear Opmode")
 public class AutonomousRedCrypto extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
     RobotController controller;
+
+    public static final int WAIT_TIME = 1000;
+    public static final double GROUND_ROTATION_FACTOR = 1.533203125;
+    public static final long DISTANCE_TIMEOUT = 800;
 
     @Override
     public void runOpMode() {
@@ -60,12 +66,88 @@ public class AutonomousRedCrypto extends LinearOpMode {
 
         controller = new RobotController(this);
 
+        // wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
-        while (opModeIsActive()) {
+        // make sure this shit can read
+        controller.jewelsColorSensor.enableLed(true);
 
-            break;
+        // run until the end of the match (driver presses STOP)
+        if (opModeIsActive()) {
+            try {
+                // image recognition
+                controller.rotateAngle(Math.toRadians(60), 1);
+                RelicRecoveryVuMark mark = controller.detectVumark();
+                Thread.sleep(2 * WAIT_TIME);
+                controller.rotateAngle(Math.toRadians(-60), 1);
+                telemetry.addData("VUMARK: ", mark.toString());
+                telemetry.update();
+
+                // align for blunt
+                controller.rotateAngle(Math.toRadians(-15), 1);
+
+                // color sensor
+                controller.moveServo(controller.jewelsArm, 0.05);
+                Thread.sleep(WAIT_TIME);
+
+                if (controller.getColor(controller.jewelsColorSensor, 25) == controller.COLOR_BLUE) {
+                    controller.rotateAngle(Math.toRadians(25), 1);
+                    controller.moveServo(controller.jewelsArm, 1);
+                    controller.rotateAngle(Math.toRadians(-25), 1);
+                } else {
+                    controller.rotateAngle(Math.toRadians(-25), 1);
+                    controller.moveServo(controller.jewelsArm, 1);
+                    controller.rotateAngle(Math.toRadians(25), 1);
+                }
+
+                // get bot's ass back in position
+                controller.rotateAngle(Math.toRadians(15), 1);
+
+                //get bot near crypto (tape)
+                controller.moveDistance(0.61, 0.3, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT * 5);
+                controller.rotateAngle(Math.toRadians(90 * GROUND_ROTATION_FACTOR), 1);
+
+                // do each case and shit
+                switch (mark) {
+                    case LEFT:
+                        controller.moveDistance(0.51, 1, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT);
+                        break;
+                    case CENTER:
+                        controller.moveDistance(0.3, 1, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT * 5);
+                        break;
+                    case RIGHT:
+                        controller.moveDistance(0.11, 1, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT * 5);
+                        break;
+                    case UNKNOWN:
+                        controller.moveDistance(0.3, 1, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT * 5);
+                        break;
+                }
+
+                // lemme slide in bruh
+                controller.rotateAngle(Math.toRadians(90 * GROUND_ROTATION_FACTOR), 1);
+                controller.moveDistance(0.3, 1, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT * 2);
+
+                // push that shit homie
+                controller.leftBeltMotor.setPower(0.5);
+                controller.rightBeltMotor.setPower(-0.5);
+
+                Thread.sleep(WAIT_TIME);
+
+                // stop conveyor
+                controller.leftBeltMotor.setPower(0);
+                controller.rightBeltMotor.setPower(0);
+
+                // go back
+                controller.moveDistance(0.17, 0.7, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT);
+                controller.moveDistance(0.17, 1, controller.DIRECTION_FORWARD, DISTANCE_TIMEOUT);
+                controller.moveDistance(0.17, 1, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT);
+            }
+
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 }
