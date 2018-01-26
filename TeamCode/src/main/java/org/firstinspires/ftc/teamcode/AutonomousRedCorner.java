@@ -107,13 +107,13 @@ public class AutonomousRedCorner extends LinearOpMode {
                 // do each case and shit
                 switch (mark) {
                     case LEFT:
-                        controller.moveDistance(1.02, 0.3, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT * 7);
+                        controller.moveDistance(1.08, 0.3, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT * 7);
                         break;
                     case CENTER:
-                        controller.moveDistance(0.91, 0.3, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT * 7);
+                        controller.moveDistance(0.89, 0.3, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT * 7);
                         break;
                     case RIGHT:
-                        controller.moveDistance(0.73, 0.3, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT * 7);
+                        controller.moveDistance(0.71, 0.3, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT * 7);
                         break;
                     case UNKNOWN:
                         controller.moveDistance(0.91, 0.3, controller.DIRECTION_REVERSE, DISTANCE_TIMEOUT * 7);

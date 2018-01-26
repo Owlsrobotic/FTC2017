@@ -100,10 +100,10 @@ public class DriverControl extends LinearOpMode {
             }
             //Manipulate elbow
             if (gamepad2.b) {
-                controller.moveServo(controller.elbowServo, 0.6);
+                controller.moveServo(controller.elbowServo, 1.0);
             }
             if (gamepad2.x) {
-                controller.moveServo(controller.elbowServo, 0.1);
+                controller.moveServo(controller.elbowServo, 0.4);
             }
             //Move elevator
             if (gamepad2.dpad_up) {

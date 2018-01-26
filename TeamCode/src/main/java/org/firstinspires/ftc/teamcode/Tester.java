@@ -77,7 +77,7 @@ public class Tester extends LinearOpMode {
             }
 
             if (gamepad1.a) {
-                controller.rotateAngle(Math.toRadians(90) * rotationFactor, 0.5);
+                controller.rotateAngle(Math.toRadians(90) * rotationFactor, 1.0);
             }
             if(gamepad1.right_bumper){
                 rotationFactorHigh = rotationFactor;
@@ -91,7 +91,7 @@ public class Tester extends LinearOpMode {
             telemetry.addData("Rotation Factor", rotationFactor);
             telemetry.update();
 
-            Thread.sleep(1000);
+            Thread.sleep(500);
         }
     }
 }
